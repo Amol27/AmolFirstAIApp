@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "289879697457",
+    "project_id": "vsinvoiceapp",
+    "storage_bucket": "vsinvoiceapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:289879697457:android:7b8b71103d57950a3a8d10",
+        "android_client_info": {
+          "package_name": "com.vsinvoice"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM_RD8wojM__O2Xd979ADi074sZuVu8A4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,4 @@
-package com.amolfirstaiapp
+package com.vsinvoice
 
 import android.app.Application
 import com.facebook.react.PackageList

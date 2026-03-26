@@ -1,0 +1,15 @@
+{
+  "react-native": {
+    "crashlytics_debug_enabled": true,
+    "crashlytics_disable_auto_disabler": true,
+    "analytics_auto_collection_enabled": true,
+    "analytics_collection_deactivated": false,
+    "analytics_collection_enabled": true,
+    "app_check_token_auto_refresh_enabled": true,
+    "app_use_admob_advertiser_id": true,
+    "perf_auto_collection_enabled": true,
+    "messaging_auto_init_enabled": true,
+    "in_app_messaging_auto_collection_enabled": true,
+    "analytics_idfv_collection_enabled": true
+  }
+}
