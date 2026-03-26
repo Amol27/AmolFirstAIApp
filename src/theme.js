@@ -3,10 +3,10 @@ export const colors = {
   background: '#F8F8F8', // Light beige/off-white
   white: '#FFFFFF',
   
-  // Primary colors - Red theme
-  primary: '#E74C3C', // Beautiful red for navigation, titles, icons
-  primaryLight: '#EC7063', // Lighter red for accent elements
-  primaryDark: '#C0392B', // Darker red for hover states
+  // Primary colors - Goldenrod theme
+  primary: '#DAA520', // Goldenrod for navigation, titles, icons
+  primaryLight: '#E4C441', // Lighter goldenrod for accent elements
+  primaryDark: '#B8941F', // Darker goldenrod for hover states
   
   // Text colors
   textPrimary: '#2C3E50', // Dark blue/indigo for titles (kept for readability)

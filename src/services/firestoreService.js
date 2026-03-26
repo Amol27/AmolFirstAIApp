@@ -4,6 +4,29 @@ import auth from '@react-native-firebase/auth';
 const INVOICES_COLLECTION = 'invoices';
 
 export const invoiceService = {
+  // Debug function to get all invoices (for troubleshooting)
+  getAllInvoicesDebug: async () => {
+    try {
+      const snapshot = await firestore()
+        .collection(INVOICES_COLLECTION)
+        .get();
+
+      console.log('DEBUG - All invoices in Firestore:', snapshot.size);
+      const allInvoices = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log('DEBUG - All invoice data:', allInvoices);
+      
+      return { success: true, data: allInvoices };
+    } catch (error) {
+      console.error('DEBUG - Error fetching all invoices:', error);
+      return { 
+        success: false, 
+        error: error.message || 'Failed to fetch all invoices' 
+      };
+    }
+  },
   // Save invoice to Firestore
   saveInvoice: async (invoiceData) => {
     try {
@@ -72,6 +95,7 @@ export const invoiceService = {
   getInvoices: async () => {
     try {
       const currentUser = auth().currentUser;
+      console.log('getInvoices - current user:', currentUser?.uid, 'currentUser:', currentUser);
       if (!currentUser) {
         throw new Error('User not authenticated');
       }
@@ -79,15 +103,17 @@ export const invoiceService = {
       const snapshot = await firestore()
         .collection(INVOICES_COLLECTION)
         .where('userId', '==', currentUser.uid)
-        .orderBy('createdAt', 'desc')
         .get();
 
+      console.log('Firestore query - snapshot size:', snapshot.size);
       const invoices = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate()?.toISOString() || new Date().toISOString(),
         updatedAt: doc.data().updatedAt?.toDate()?.toISOString() || new Date().toISOString(),
       }));
+
+      console.log('Processed invoices:', invoices);
 
       return { success: true, data: invoices };
     } catch (error) {
@@ -167,7 +193,9 @@ export const invoiceService = {
   // Real-time listener for invoices
   onInvoicesChange: (callback) => {
     const currentUser = auth().currentUser;
+    console.log('onInvoicesChange - current user:', currentUser?.uid, 'currentUser:', currentUser);
     if (!currentUser) {
+      console.error('No authenticated user for invoice listener');
       callback({ success: false, error: 'User not authenticated' });
       return null;
     }
@@ -175,15 +203,17 @@ export const invoiceService = {
     const unsubscribe = firestore()
       .collection(INVOICES_COLLECTION)
       .where('userId', '==', currentUser.uid)
-      .orderBy('createdAt', 'desc')
       .onSnapshot(
         (snapshot) => {
+          console.log('Real-time listener - snapshot size:', snapshot.size);
           const invoices = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
             createdAt: doc.data().createdAt?.toDate()?.toISOString() || new Date().toISOString(),
             updatedAt: doc.data().updatedAt?.toDate()?.toISOString() || new Date().toISOString(),
           }));
+          
+          console.log('Real-time listener - processed invoices:', invoices);
           callback({ success: true, data: invoices });
         },
         (error) => {

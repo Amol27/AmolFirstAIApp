@@ -34,19 +34,19 @@ const LoginScreen = () => {
     try {
       const result = await signInWithEmailAndPassword(email, password);
       
-      if (result.success) {
+      if (result.success && result.user) {
         const userData = {
-          uid: result.user.uid,
-          email: result.user.email,
-          displayName: result.user.displayName,
-          emailVerified: result.user.emailVerified,
+          uid: result.user.uid || '',
+          email: result.user.email || email,
+          displayName: result.user.displayName || '',
+          emailVerified: result.user.emailVerified || false,
         };
         
         dispatch(loginSuccess(userData));
         Alert.alert('Success', 'Login successful!');
       } else {
-        dispatch(loginFailure(result.error));
-        Alert.alert('Error', result.error);
+        dispatch(loginFailure(result.error || 'Login failed'));
+        Alert.alert('Error', result.error || 'Login failed');
       }
     } catch (err) {
       dispatch(loginFailure(err.message || 'Login failed'));
@@ -60,33 +60,32 @@ const LoginScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {/* Beautiful Header Section */}
+        {/* Geometric Background Design */}
+        <View style={styles.backgroundDesign}>
+          <View style={[styles.geometricShape, styles.shape1]} />
+          <View style={[styles.geometricShape, styles.shape2]} />
+          <View style={[styles.geometricShape, styles.shape3]} />
+          <View style={[styles.geometricShape, styles.shape4]} />
+        </View>
+
+        {/* Header Section */}
         <View style={styles.headerSection}>
-          <View style={styles.welcomeCard}>
-            <View style={styles.iconContainer}>
-              <View style={styles.userIcon}>
-                <Text style={styles.userIconText}>👤</Text>
-              </View>
-              <View style={styles.statusDot} />
+          <Text style={styles.title}>My Account</Text>
+          <View style={styles.iconContainer}>
+            <View style={styles.userIcon}>
+              <Text style={styles.userIconText}>👤</Text>
             </View>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to your account to continue</Text>
           </View>
         </View>
 
-        {/* Beautiful Login Form */}
+        {/* Login Form */}
         <View style={styles.formContainer}>
-          <View style={styles.formHeader}>
-            <Text style={styles.formTitle}>Login</Text>
-            <Text style={styles.formSubtitle}>Enter your credentials</Text>
-          </View>
-
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
-              <Text style={styles.inputIcon}>📧</Text>
+              <Text style={styles.inputIcon}>👤</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder="Login"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -111,6 +110,10 @@ const LoginScreen = () => {
             </View>
           </View>
 
+          <TouchableOpacity style={styles.forgotPasswordContainer}>
+            <Text style={styles.forgotPasswordText}>Forgot password ?</Text>
+          </TouchableOpacity>
+
           {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorIcon}>⚠️</Text>
@@ -124,22 +127,12 @@ const LoginScreen = () => {
             disabled={isLoading}
           >
             {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator color="#fff" />
-                <Text style={[styles.loginButtonText, styles.loadingText]}>Signing in...</Text>
-              </View>
+              <ActivityIndicator color="#fff" />
             ) : (
-              <View style={styles.buttonContent}>
-                <Text style={styles.loginButtonText}>Sign In</Text>
-                <Text style={styles.buttonArrow}>→</Text>
-              </View>
+              <Text style={styles.loginButtonText}>Sign in</Text>
             )}
           </TouchableOpacity>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Vishal Surude Associates</Text>
-            <Text style={styles.footerSubtext}>Invoice Management System</Text>
-          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -149,85 +142,96 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#F0F4F8',
   },
   scrollContainer: {
     flexGrow: 1,
   },
-  // Beautiful Header Section
+  // Geometric Background Design
+  backgroundDesign: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
+  geometricShape: {
+    position: 'absolute',
+    borderRadius: 150,
+  },
+  shape1: {
+    width: 200,
+    height: 200,
+    backgroundColor: '#4A90E2',
+    top: -50,
+    right: -50,
+    opacity: 0.3,
+  },
+  shape2: {
+    width: 150,
+    height: 150,
+    backgroundColor: '#50C878',
+    top: 100,
+    left: -30,
+    opacity: 0.25,
+  },
+  shape3: {
+    width: 180,
+    height: 180,
+    backgroundColor: '#FF8C42',
+    bottom: 200,
+    right: 50,
+    opacity: 0.2,
+  },
+  shape4: {
+    width: 120,
+    height: 120,
+    backgroundColor: '#6B5B95',
+    bottom: 50,
+    left: 50,
+    opacity: 0.15,
+  },
+  // Header Section
   headerSection: {
     paddingTop: spacing.xl * 2,
     paddingBottom: spacing.lg,
     paddingHorizontal: spacing.lg,
-  },
-  welcomeCard: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.xl,
-    padding: spacing.xl,
-    ...shadows.card,
     alignItems: 'center',
-  },
-  iconContainer: {
-    position: 'relative',
-    marginBottom: spacing.lg,
-  },
-  userIcon: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  userIconText: {
-    fontSize: 50,
-  },
-  statusDot: {
-    position: 'absolute',
-    bottom: 5,
-    right: 5,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#2ECC71',
-    borderWidth: 3,
-    borderColor: colors.primary,
+    zIndex: 1,
   },
   title: {
     ...typography.h1,
-    color: colors.textWhite,
+    color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xl,
     fontWeight: 'bold',
+    fontSize: 28,
   },
-  subtitle: {
-    ...typography.body,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
+  iconContainer: {
+    marginBottom: spacing.lg,
   },
-  // Beautiful Form Section
+  userIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(218, 165, 32, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  userIconText: {
+    fontSize: 40,
+  },
+  // Form Section
   formContainer: {
     backgroundColor: colors.white,
     margin: spacing.lg,
     padding: spacing.xl,
     borderRadius: borderRadius.xl,
     ...shadows.card,
-  },
-  formHeader: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  formTitle: {
-    ...typography.h2,
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-    fontWeight: 'bold',
-  },
-  formSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    zIndex: 1,
   },
   inputContainer: {
     marginBottom: spacing.lg,
@@ -252,6 +256,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
   },
+  forgotPasswordContainer: {
+    alignSelf: 'flex-end',
+    marginBottom: spacing.lg,
+  },
+  forgotPasswordText: {
+    ...typography.caption,
+    color: colors.primary,
+    textDecorationLine: 'underline',
+  },
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -270,55 +283,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loginButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#FF8C42',
     borderRadius: borderRadius.lg,
     paddingVertical: spacing.lg,
     alignItems: 'center',
     ...shadows.cardLight,
-    marginBottom: spacing.lg,
   },
   loginButtonDisabled: {
     opacity: 0.6,
-  },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   loginButtonText: {
     ...typography.body,
     color: colors.textWhite,
     fontWeight: 'bold',
     fontSize: 16,
-  },
-  buttonArrow: {
-    fontSize: 20,
-    color: colors.textWhite,
-    marginLeft: spacing.sm,
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    marginLeft: spacing.sm,
-  },
-  footer: {
-    alignItems: 'center',
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  footerText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontWeight: '600',
-  },
-  footerSubtext: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    opacity: 0.7,
   },
 });
 

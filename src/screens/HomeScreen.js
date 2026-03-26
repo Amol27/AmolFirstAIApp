@@ -10,6 +10,7 @@ import {
   FlatList,
   Image,
   Linking,
+  Clipboard,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -73,8 +74,10 @@ const HomeScreen = ({ navigation, route }) => {
 
   // Set up real-time listener for invoices
   useEffect(() => {
+    console.log('Setting up invoice listener, user:', user);
     const unsubscribe = invoiceService.onInvoicesChange((result) => {
       if (result.success) {
+        console.log('Received invoices:', result.data);
         setInvoices(result.data);
       } else {
         console.error('Error in invoice listener:', result.error);
@@ -84,7 +87,7 @@ const HomeScreen = ({ navigation, route }) => {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [user]);
 
   // Refresh data when screen comes into focus
   useFocusEffect(
@@ -98,6 +101,11 @@ const HomeScreen = ({ navigation, route }) => {
   const loadInvoices = async () => {
     setLoadingInvoices(true);
     try {
+      // Debug: Check all invoices in Firestore
+      console.log('=== DEBUG: Checking all invoices in Firestore ===');
+      const debugResult = await invoiceService.getAllInvoicesDebug();
+      console.log('=== DEBUG RESULT ===', debugResult);
+      
       const result = await invoiceService.getInvoices();
       if (result.success) {
         setInvoices(result.data);
@@ -168,7 +176,7 @@ const HomeScreen = ({ navigation, route }) => {
 
 💰 *Expenses Summary:*
 ${invoice.expenses?.map(expense => 
-  `• ${expense.description}: ₹${expense.amount}`
+  `• ${expense.type || expense.description || expense.name || 'Expense'}: ₹${expense.amount || '0'}`
 ).join('\n') || 'No expenses'}
 
 💳 *Total Amount:* ₹${invoice.totalExpenses?.toFixed(2) || '0.00'}
@@ -177,20 +185,70 @@ ${invoice.expenses?.map(expense =>
 Generated from Vishal Surude Associates
       `;
 
-      const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(invoiceMessage)}`;
+      // Clean the mobile number (remove non-digits only, keep all digits)
+      const cleanMobileNumber = invoice.mobile ? invoice.mobile.replace(/[^0-9+]/g, '') : '';
       
-      // Check if WhatsApp is installed
-      const canOpen = await Linking.canOpenURL(whatsappUrl);
-      
-      if (canOpen) {
-        await Linking.openURL(whatsappUrl);
-      } else {
-        Alert.alert(
-          'WhatsApp Not Found',
-          'WhatsApp is not installed on your device. Please install WhatsApp to share invoices.',
-          [{ text: 'OK' }]
-        );
+      // Ensure the number has country code for India if it doesn't start with +
+      let formattedNumber = cleanMobileNumber;
+      if (cleanMobileNumber && !cleanMobileNumber.startsWith('+')) {
+        // If it's a 10-digit Indian number, add +91 country code
+        if (cleanMobileNumber.length === 10) {
+          formattedNumber = `+91${cleanMobileNumber}`;
+        }
+        // If it starts with 0 and has 11 digits (like 09405317895), remove 0 and add +91
+        else if (cleanMobileNumber.length === 11 && cleanMobileNumber.startsWith('0')) {
+          formattedNumber = `+91${cleanMobileNumber.substring(1)}`;
+        }
+        // If it's already 12 digits starting with 91, add +
+        else if (cleanMobileNumber.length === 12 && cleanMobileNumber.startsWith('91')) {
+          formattedNumber = `+${cleanMobileNumber}`;
+        }
       }
+      
+      // Try to open WhatsApp directly to the mobile number
+      try {
+        const whatsappUrl = `whatsapp://send?phone=${formattedNumber}&text=${encodeURIComponent(invoiceMessage)}`;
+        await Linking.openURL(whatsappUrl);
+        return; // If this works, we're done
+      } catch (whatsappError) {
+        console.log('WhatsApp native failed, trying web URL:', whatsappError);
+      }
+      
+      // Try WhatsApp web URL with mobile number
+      try {
+        const webUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(invoiceMessage)}`;
+        await Linking.openURL(webUrl);
+        return; // If this works, we're done
+      } catch (webError) {
+        console.log('WhatsApp web failed:', webError);
+      }
+      
+      // If both failed, show alternative options
+      Alert.alert(
+        'Share Invoice',
+        'Unable to open WhatsApp. Choose another way to share:',
+        [
+          {
+            text: 'Copy to Clipboard',
+            onPress: async () => {
+              try {
+                await Clipboard.setString(invoiceMessage);
+                Alert.alert('Copied', 'Invoice details copied to clipboard!');
+              } catch (error) {
+                Alert.alert('Error', 'Failed to copy to clipboard');
+              }
+            }
+          },
+          {
+            text: 'Try Again',
+            onPress: () => handleShareInvoice(invoice)
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
     } catch (error) {
       console.error('Error sharing invoice:', error);
       Alert.alert(
